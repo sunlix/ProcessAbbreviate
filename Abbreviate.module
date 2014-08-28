@@ -1,0 +1,202 @@
+<?php
+
+/**
+ * ProcessWire 'Abbreviate' module
+ *
+ * hooks the save event to mark all abbreviations
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2010 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+require_once('Abbreviation.php');
+
+class Abbreviate extends WireData implements Module
+{
+
+    const TABLE = 'abbreviations';
+
+    /**
+     * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     * @return array
+     */
+    public static function getModuleInfo()
+    {
+
+        return array(
+            'title'    => 'Abbreviate',
+            'version'  => 001,
+            'summary'  => 'Find all abbreviations and mark them with the right title',
+            'href'     => 'http://www.zenmotion.de',
+            'singular' => true,
+            'autoload' => true,
+            'icon'     => 'smile-o',
+        );
+    }
+
+    /**
+     * Initialize the module
+     */
+    public function init()
+    {
+        $this->pages->addHookAfter('save', $this, 'handle');
+    }
+
+    public function handle($event)
+    {
+        $page = $event->arguments[0];
+
+        $abbreviations = $this->extractAbbreviations($page->body);
+
+        if(count($abbreviations) > 0)
+        {
+            $this->insert($abbreviations);
+
+            $this->message(count($abbreviations) .' abbreviations found');
+        }
+    }
+
+    /**
+     * Extract all abbreviations and returns a array of Abbreviation
+     * @param  string $text
+     * @return array
+     */
+    public function extractAbbreviations($text)
+    {
+        preg_match_all('/<abbr.*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
+
+        foreach ($matches[0] as $key => $value)
+        {
+            $abbreviation = new Abbreviation();
+            $abbreviation->setText(trim($matches[2][$key]));
+            $abbreviation->setTitle(trim($matches[1][$key]));
+
+            $abbreviations[] = $abbreviation;
+        }
+
+        return $abbreviations;
+    }
+
+    /**
+     * Inserts all objects of Abbreviation
+     * @param  array  $abbreviations
+     * @return boolean
+     */
+    public function insert(array $abbreviations)
+    {
+        foreach ($abbreviations as $abbreviation)
+        {
+            $values[] = '("'. $abbreviation->getText() .'", "'. $abbreviation->getTitle() .'")';
+        }
+
+        $sql = 'INSERT INTO '. self::TABLE .'(`text`, `title`) VALUES '. implode(',', $values) .'ON DUPLICATE KEY UPDATE title=title';
+
+        try
+        {
+            if ($this->db->query($sql)) return true;
+        }
+        catch (Exception $e)
+        {
+            $this->error($e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Find all saved abbreviations and return a array of Abbreviation
+     * @return array
+     */
+    public function findAll()
+    {
+        $sql = 'SELECT `text`, `title` FROM '. self::TABLE;
+
+        try
+        {
+            $results = $this->db->query($sql);
+
+            while($row = $results->fetch_assoc())
+            {
+                $abbreviation = new Abbreviation();
+                $abbreviation->setText($row['text']);
+                $abbreviation->setTitle($row['title']);
+
+                $abbreviations = $abbreviation;
+
+                return $abbreviations;
+            }
+        }
+        catch (Exception $e)
+        {
+            $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * Find all abbreviations by text and return a array of Abbreviation
+     * @param  string $text
+     * @return array
+     */
+    public function findAllByText($text)
+    {
+        $sql = 'SELECT `text`, `title` FROM '. self::TABLE .' WHERE text="'. $text .'"';
+
+        try
+        {
+            $results = $this->db->query($sql);
+
+            while($row = $results->fetch_assoc())
+            {
+                $abbreviation = new Abbreviation();
+                $abbreviation->setText($row['text']);
+                $abbreviation->setTitle($row['title']);
+
+                $abbreviations = $abbreviation;
+
+                return $abbreviations;
+            }
+        }
+        catch (Exception $e)
+        {
+            $this->error($e->getMessage());
+        }
+    }
+
+    public function ___install()
+    {
+        $sql = 'CREATE TABLE '. self::TABLE .'('.
+               '`id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY, '.
+               '`text` varchar(128) NOT NULL, '.
+               '`title` varchar(255) NOT NULL, '.
+               'UNIQUE `title`(`title`)'.
+               ');';
+
+        try
+        {
+            $this->db->query($sql);
+        }
+        catch (Exception $e)
+        {
+            $this->error($e->getMessage());
+        }
+    }
+
+    public function ___uninstall()
+    {
+        $sql = 'DROP TABLE '. self::TABLE .';';
+
+        try
+        {
+            $this->db->query($sql);
+        }
+        catch (Exception $e)
+        {
+            $this->error($e->getMessage());
+        }
+    }
+}

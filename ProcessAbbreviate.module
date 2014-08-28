@@ -1,0 +1,343 @@
+<?php
+
+class ProcessAbbreviate extends Process
+{
+    /**
+     * The name that will be used for the page this module creates
+     *
+     */
+    const PAGE_NAME = 'abbreviations';
+
+    protected $abbreviate = null;
+
+    /**
+     * Return information about this module (required)
+     *
+     */
+    public static function getModuleInfo() {
+        return array(
+            'title'       => 'Abbreviations',
+            'summary'     => 'Easily insert abbreviations',
+            'version'     => 001,
+            'permission'  => 'abbreviations',
+            'permissions' => array(
+                'abbreviations'      => 'List and view abbreviations',
+                'abbreviations-edit' => 'Add/edit/delete abbreviations'
+            ),
+            'icon'        => 'sun-o',
+            'requires'    => 'Abbreviate'
+        );
+    }
+
+    /**
+     * This is an optional initialization function called before any execute functions.
+     *
+     */
+    public function init()
+    {
+        parent::init(); // required
+
+        $data             = $this->modules->getModuleConfigData('Abbreviate');
+        $this->abbreviate = $this->modules->get('Abbreviate');
+    }
+
+    protected function hasPermission($name)
+    {
+        $user = $this->user;
+        if($user->isSuperuser()) return true;
+
+        if($name == 'abbreviations-edit') {
+            $permission = $this->permissions->get($name);
+            // before new permissions, there was just hanna-code which assigned all access
+            // so if new permissions aren't installed, we fallback to old behavior
+            if(!$permission->id) $name = 'abbreviations';
+        }
+
+        $has = $user->hasPermission($name);
+
+        return $has;
+    }
+
+    protected function editable() {
+        return $this->hasPermission('abbreviations-edit');
+    }
+
+    /**
+     * This function is executed when a page with your Process assigned is accessed.
+     *
+     */
+    public function ___execute()
+    {
+        $table = $this->modules->get('MarkupAdminDataTable');
+        $table->setEncodeEntities(false);
+        $table->headerRow(array(
+            $this->_x('Abbreviation', 'list-table'),
+            $this->_x('Explanation', 'list-table'),
+        ));
+
+        $typeLabels = $this->typeLabels;
+
+        $sort = 'abbreviation';
+        $sql = "SELECT id, text, title FROM ". Abbreviate::TABLE ." ORDER BY :sort";
+        $query = $this->database->prepare($sql);
+        $query->bindValue(':sort', $sort);
+        $query->execute();
+        $numRows = 0;
+
+        while($row = $query->fetch(PDO::FETCH_NUM)) {
+            list($id, $text, $title) = $row;
+
+            $table->row(array(
+                wire('sanitizer')->entities($text) => "edit/?id=$id",
+                $title
+            ));
+            $numRows++;
+        }
+
+        if(!$numRows) $this->message($this->_('No abbreviations yet, go ahead and add one!'));
+
+        if($this->hasPermission('abbreviations-edit')) {
+            $button1 = $this->modules->get('InputfieldButton');
+            $button1->attr('id', 'button_add');
+            $button1->attr('value', $this->_('Add New'));
+            $button1->attr('href', './edit/');
+            $button1->class .= ' head_button_clone';
+
+            $button2 = $this->modules->get('InputfieldButton');
+            $button2->attr('id', 'button_import');
+            $button2->attr('value', $this->_('Import'));
+            $button2->attr('href', './import/');
+            $button2->class .= ' ui-priority-secondary';
+
+            $buttons = $button1->render() . $button2->render();
+        } else {
+            $buttons = '';
+        }
+
+        $out = $table->render();
+        if(empty($out)) $out .= "<br />";
+
+        return $out . $buttons;
+    }
+
+    /**
+     * Called when the URL is this module's page URL + "/something/"
+     *
+     */
+    public function ___executeEdit()
+    {
+        // add a breadcrumb that returns to our main page
+        $this->breadcrumbs->add(new Breadcrumb('../', $this->page->title));
+        $this->modules->get('JqueryWireTabs');
+
+        $id = (int) $this->input->get->id;
+        if($id) {
+            $query = $this->database->prepare("SELECT text, title FROM ". Abbreviate::TABLE ." WHERE id=:id");
+            $query->bindValue(':id', $id);
+            $query->execute();
+            if(!$query->rowCount())
+                throw new WireException("Unknown ID");
+            list($text, $title) = $query->fetch(PDO::FETCH_NUM);
+            $exportData = array(
+                'text'  => $text,
+                'title' => $title
+            );
+
+            Wire::setFuel('processHeadline', $this->_("Edit abbreviation:") . " $text");
+        } else {
+            $text       = '';
+            $title      = '';
+            $exportData = null;
+            Wire::setFuel('processHeadline', $this->_("Adding new abbreviation"));
+        }
+
+        $editable = $this->editable();
+        if(!$editable)
+            $this->message($this->_('This abbreviation is read-only'));
+
+        $form = $this->modules->get('InputfieldForm');
+        $form->attr('id', 'AbbreviationEdit');
+        $form->action = './';
+        $form->method = 'post';
+
+        $tab = new InputfieldWrapper();
+        $tab->attr('title', $this->_('Basics'));
+        $tab->class .= " WireTab";
+
+        $textField = $this->modules->get('InputfieldName');
+        $textField->attr('name', 'abbr_text');
+        $textField->attr('value', $text);
+        $textField->description = $this->_('Any combination of these characters: -_.a-zA-Z0-9 (i.e. letters, numbers, hyphens, underscores, periods, no spaces)');
+        $tab->add($textField);
+
+        $titleField = $this->modules->get('InputfieldText');
+        $titleField->label = $this->_('Explanation');
+        $titleField->attr('name', 'abbr_title');
+        $titleField->attr('value', $title);
+        $titleField->description = $this->_('Any combination of these characters: -_.a-zA-Z0-9 (i.e. letters, numbers, hyphens, underscores, periods, no spaces)');
+        $tab->add($titleField);
+
+        $form->add($tab);
+
+        if($id && $editable) {
+            $tab = new InputfieldWrapper();
+            $tab->attr('title', $this->_('Delete'));
+            $tab->class .= " WireTab";
+            $tab->attr('id', 'AbbreviationDelete');
+            $f = $this->modules->get('InputfieldCheckbox');
+            $f->attr('name', 'abbr_delete');
+            $f->attr('value', $id);
+            $f->label = $tab->attr('title');
+            $f->description = $this->_('Check the box and submit the form to permanently delete this abbreviation.');
+            $tab->add($f);
+            $form->add($tab);
+        }
+
+        $f = $this->modules->get('InputfieldHidden');
+        $f->attr('name', 'abbr_id');
+        $f->attr('value', $id);
+        $form->add($f);
+
+        if($editable) {
+            $f = $this->modules->get('InputfieldSubmit');
+            $f->class .= ' head_button_clone';
+            $f->attr('id+name', 'abbr_save');
+            $f->attr('value', $this->_('Save'));
+            $form->add($f);
+
+            $f = $this->modules->get('InputfieldSubmit');
+            $f->attr('id+name', 'abbr_save_exit');
+            $f->class .= " ui-priority-secondary";
+            $f->attr('value', $this->_('Save & Exit'));
+            $form->add($f);
+        }
+
+        $post = $this->input->post;
+        if($post->abbr_save || $post->abbr_save_exit)
+            $this->save($form);
+
+        return $form->render();
+    }
+
+    /**
+     * Save abbreviation
+     *
+     */
+    protected function save($form)
+    {
+        $permissionError = $this->_('You do not hae permission to save this.');
+        if(!$this->hasPermission('abbreviations-edit')) throw new WireException($permissionError);
+
+        $id            = (int) $this->input->post->abbr_id;
+        $title         = $this->input->post->abbr_title;
+        $delete        = (int) $this->input->post->abbr_delete;
+        $exitAfterSave = $this->input->post->abbr_save_exit;
+        $prevType      = 0;
+        $database      = $this->database;
+
+        if($id) {
+            $query = $database->prepare("SELECT `title` FROM ". Abbreviate::TABLE ." WHERE id=:id");
+            $query->bindValue(':id', $id);
+            $query->execute();
+            list($prevType) = $query->fetch(PDO::FETCH_NUM);
+        }
+
+        if($delete && $delete === $id) {
+            $query = $database->prepare("DELETE FROM ". Abbreviate::TABLE ." WHERE id=:delete LIMIT 1");
+            $query->bindValue(":delete", $delete);
+            $query->execute();
+            $this->message($this->_('Deleted abbreviation'));
+            $this->session->redirect('../');
+        }
+
+        $form->processInput($this->input->post);
+
+        // specific to this abbreviation
+        $text  = $form->get('abbr_text')->value;
+        $title = $form->get('abbr_title')->value;
+
+        if(empty($text)) {
+            $form->get('abbr_text')->error('Text is required');
+            return false;
+        }
+
+        if(empty($title)) {
+            $form->get('abbr_title')->error('Title is required');
+            return false;
+        }
+
+        $sql =  ($id ? "UPDATE " : "INSERT INTO ") . Abbreviate::TABLE ." " .
+            "SET `text`=:text, `title`=:title " .
+            ($id ? "WHERE id=:id" : "");
+
+        $query = $database->prepare($sql);
+        $query->bindValue(':text', $text);
+        $query->bindValue(':title', $title);
+        if($id) $query->bindValue(':id', $id);
+        $result = $query->execute();
+
+        if($result) {
+            if(!$id)
+                $id = $database->lastInsertId();
+
+            $this->message($this->_("Saved abbreviation") . " - $text");
+
+            if($exitAfterSave)
+                $this->session->redirect("../");
+            else
+                $this->session->redirect("./?id=$id");
+        } else {
+            $this->error("Error saving");
+            return false;
+        }
+    }
+
+    /**
+     * Called only when your module is installed
+     *
+     * This version creates a new page with this Process module assigned.
+     *
+     */
+    public function ___install()
+    {
+        // create the page our module will be assigned to
+        $page           = new Page();
+        $page->template = 'admin';
+        $page->name     = self::PAGE_NAME;
+
+        // installs to the admin "Setup" menu ... change as you see fit
+        $page->parent   = $this->pages->get($this->config->adminRootPageID)->child('name=setup');
+        $page->process  = $this;
+
+        // we will make the page title the same as our module title
+        // but you can make it whatever you want
+        $info           = self::getModuleInfo();
+        $page->title    = $info['title'];
+
+        // save the page
+        $page->save();
+
+        // tell the user we created this page
+        $this->message("Created Page: {$page->path}");
+    }
+
+    /**
+     * Called only when your module is uninstalled
+     *
+     * This should return the site to the same state it was in before the module was installed.
+     *
+     */
+    public function ___uninstall()
+    {
+        // find the page we installed, locating it by the process field (which has the module ID)
+        // it would probably be sufficient just to locate by name, but this is just to be extra sure.
+        $moduleID = $this->modules->getModuleID($this);
+        $page     = $this->pages->get("template=admin, process=$moduleID, name=" . self::PAGE_NAME);
+
+        if($page->id) {
+            // if we found the page, let the user know and delete it
+            $this->message("Deleting Page: {$page->path}");
+            $page->delete();
+        }
+    }
+}
