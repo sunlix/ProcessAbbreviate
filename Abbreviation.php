@@ -3,13 +3,18 @@
 /**
  * Abbreviation
  *
- * Entity for ProcessWire Plugin Abbreviate
+ * Entity for ProcessWire Plugin 'Abbreviate'
  *
  * Sven Schüring <ssch@zenmotion.de>
  * http://www.zenmotion.de
  */
 class Abbreviation implements JsonSerializable
 {
+    /**
+     * id
+     * @var integer
+     */
+    protected $id;
 
     /**
      * text
@@ -22,6 +27,15 @@ class Abbreviation implements JsonSerializable
      * @var string
      */
     protected $title;
+
+    /**
+     * return the id of abbreviation
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 
     /**
      * return the abbreviation
@@ -39,6 +53,17 @@ class Abbreviation implements JsonSerializable
     public function getTitle()
     {
         return $this->title;
+    }
+
+    /**
+     * set the id of abbreviation
+     * @param integer $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     /**
@@ -63,6 +88,10 @@ class Abbreviation implements JsonSerializable
         return $this;
     }
 
+    /**
+     * JSON representation of this class
+     * @return array
+     */
     public function jsonSerialize()
     {
         return [

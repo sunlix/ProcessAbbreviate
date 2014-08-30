@@ -5,6 +5,9 @@
  *
  * hooks the save event to mark all abbreviations
  *
+ * Sven Schüring <ssch@zenmotion.de>
+ * http://www.zenmotion.de
+ *
  * ProcessWire 2.x
  * Copyright (C) 2010 by Ryan Cramer
  * Licensed under GNU/GPL v2, see LICENSE.TXT
@@ -33,6 +36,7 @@ class Abbreviate extends WireData implements Module
             'version'  => 001,
             'summary'  => 'Find all abbreviations and mark them with the right title',
             'href'     => 'http://www.zenmotion.de',
+            'installs' => 'ProcessAbbreviate',
             'singular' => true,
             'autoload' => true,
             'icon'     => 'smile-o',
@@ -40,21 +44,26 @@ class Abbreviate extends WireData implements Module
     }
 
     /**
-     * Initialize the module
+     * initialize the module
+     * @return void
      */
     public function init()
     {
         $this->pages->addHookAfter('save', $this, 'handle');
     }
 
+    /**
+     * main module handling
+     * @param  [type] $event
+     * @return void
+     */
     public function handle($event)
     {
         $page = $event->arguments[0];
 
         $abbreviations = $this->extractAbbreviations($page->body);
 
-        if(count($abbreviations) > 0)
-        {
+        if (count($abbreviations) > 0) {
             $this->insert($abbreviations);
 
             $this->message(count($abbreviations) .' abbreviations found');
@@ -70,8 +79,7 @@ class Abbreviate extends WireData implements Module
     {
         preg_match_all('/<abbr.*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
 
-        foreach ($matches[0] as $key => $value)
-        {
+        foreach ($matches[0] as $key => $value) {
             $abbreviation = new Abbreviation();
             $abbreviation->setText(trim($matches[2][$key]));
             $abbreviation->setTitle(trim($matches[1][$key]));
@@ -89,19 +97,37 @@ class Abbreviate extends WireData implements Module
      */
     public function insert(array $abbreviations)
     {
-        foreach ($abbreviations as $abbreviation)
-        {
+        foreach ($abbreviations as $abbreviation) {
             $values[] = '("'. $abbreviation->getText() .'", "'. $abbreviation->getTitle() .'")';
         }
 
         $sql = 'INSERT INTO '. self::TABLE .'(`text`, `title`) VALUES '. implode(',', $values) .'ON DUPLICATE KEY UPDATE title=title';
 
-        try
-        {
-            if ($this->db->query($sql)) return true;
+        try {
+            if ($this->database->query($sql))
+                return true;
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
         }
-        catch (Exception $e)
-        {
+
+        return false;
+    }
+
+    /**
+     * delete the given abbreviation
+     * @param  Abbreviation $abbreviation
+     * @return boolean
+     */
+    public function delete(Abbreviation $abbreviation)
+    {
+        $sql = 'DELETE FROM '. self::TABLE .' WHERE `id`=:id';
+
+        try {
+            $query = $this->database->prepare($sql);
+            $query->bindValue(':id', $abbreviation->getId());
+            if ($query->execute())
+                return true;
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -114,27 +140,52 @@ class Abbreviate extends WireData implements Module
      */
     public function findAll()
     {
-        $sql = 'SELECT `text`, `title` FROM '. self::TABLE;
+        $sql = 'SELECT * FROM '. self::TABLE;
 
-        try
-        {
-            $results = $this->db->query($sql);
+        try {
+            $query = $this->database->prepare($sql);
+            $query->execute();
 
-            while($row = $results->fetch_assoc())
-            {
+            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                 $abbreviation = new Abbreviation();
+                $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
 
-                $abbreviations = $abbreviation;
-
-                return $abbreviations;
+                $abbreviations[] = $abbreviation;
             }
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
+
+        return $abbreviations;
+    }
+
+    /**
+     * Find one abbreviation by id and return a array of Abbreviation
+     * @param  string $text
+     * @return array
+     */
+    public function findOneById($id)
+    {
+        $sql = 'SELECT * FROM '. self::TABLE .' WHERE `id`=:id';
+
+        try {
+            $query = $this->database->prepare($sql);
+            $query->bindValue(':id', $id);
+            $query->execute();
+
+            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+                $abbreviation = new Abbreviation();
+                $abbreviation->setId($row['id']);
+                $abbreviation->setText($row['text']);
+                $abbreviation->setTitle($row['title']);
+            }
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+        }
+
+        return $abbreviation;
     }
 
     /**
@@ -144,29 +195,32 @@ class Abbreviate extends WireData implements Module
      */
     public function findAllByText($text)
     {
-        $sql = 'SELECT `text`, `title` FROM '. self::TABLE .' WHERE text="'. $text .'"';
+        $sql = 'SELECT * FROM '. self::TABLE .' WHERE `text`=:text';
 
-        try
-        {
-            $results = $this->db->query($sql);
+        try {
+            $query = $this->database->prepare($sql);
+            $query->bindValue(':text', $text);
+            $query->execute();
 
-            while($row = $results->fetch_assoc())
-            {
+            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                 $abbreviation = new Abbreviation();
+                $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
 
-                $abbreviations = $abbreviation;
-
-                return $abbreviations;
+                $abbreviations[] = $abbreviation;
             }
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
+
+        return $abbreviations;
     }
 
+    /**
+     * called when the module will installed
+     * @return void
+     */
     public function ___install()
     {
         $sql = 'CREATE TABLE '. self::TABLE .'('.
@@ -176,26 +230,24 @@ class Abbreviate extends WireData implements Module
                'UNIQUE `title`(`title`)'.
                ');';
 
-        try
-        {
-            $this->db->query($sql);
-        }
-        catch (Exception $e)
-        {
+        try {
+            $this->database->query($sql);
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
     }
 
+    /**
+     * called when the module will uninstalled
+     * @return void
+     */
     public function ___uninstall()
     {
         $sql = 'DROP TABLE '. self::TABLE .';';
 
-        try
-        {
-            $this->db->query($sql);
-        }
-        catch (Exception $e)
-        {
+        try {
+            $this->database->query($sql);
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
     }
