@@ -3,7 +3,7 @@
 /**
  * ProcessWire 'Abbreviate' module
  *
- * hooks the save event to mark all abbreviations
+ * hooks the save event to extract and mark all abbreviations
  *
  * Sven Schüring <ssch@zenmotion.de>
  * http://www.zenmotion.de
@@ -36,10 +36,10 @@ class Abbreviate extends WireData implements Module
             'version'  => 001,
             'summary'  => 'Find all abbreviations and mark them with the right title',
             'href'     => 'http://www.zenmotion.de',
-            'installs' => 'ProcessAbbreviate',
             'singular' => true,
             'autoload' => true,
             'icon'     => 'smile-o',
+            'installs' => 'ProcessAbbreviate',
         );
     }
 
@@ -136,7 +136,7 @@ class Abbreviate extends WireData implements Module
 
     /**
      * Find all saved abbreviations and return a array of Abbreviation
-     * @return array
+     * @return array|false
      */
     public function findAll()
     {
@@ -158,13 +158,13 @@ class Abbreviate extends WireData implements Module
             $this->error($e->getMessage());
         }
 
-        return $abbreviations;
+        return isset($abbreviations) ? $abbreviations : false;
     }
 
     /**
      * Find one abbreviation by id and return a array of Abbreviation
      * @param  string $text
-     * @return array
+     * @return array|false
      */
     public function findOneById($id)
     {
@@ -185,13 +185,13 @@ class Abbreviate extends WireData implements Module
             $this->error($e->getMessage());
         }
 
-        return $abbreviation;
+        return isset($abbreviation) ? $abbreviation : false;
     }
 
     /**
      * Find all abbreviations by text and return a array of Abbreviation
      * @param  string $text
-     * @return array
+     * @return array|false
      */
     public function findAllByText($text)
     {
@@ -214,7 +214,7 @@ class Abbreviate extends WireData implements Module
             $this->error($e->getMessage());
         }
 
-        return $abbreviations;
+        return isset($abbreviations) ? $abbreviations : false;
     }
 
     /**

@@ -93,15 +93,16 @@ class ProcessAbbreviate extends Process
 
         $abbreviations = $this->abbreviate->findAll();
 
-        foreach ($abbreviations as $abbreviation) {
-            $table->row(array(
-                wire('sanitizer')->entities($abbreviation->getText()) => "edit/?id=".$abbreviation->getId(),
-                $abbreviation->getTitle(),
-            ));
-        }
-
-        if (count($abbreviations) < 1)
+        if ($abbreviations) {
+            foreach ($abbreviations as $abbreviation) {
+                $table->row(array(
+                    wire('sanitizer')->entities($abbreviation->getText()) => "edit/?id=".$abbreviation->getId(),
+                    $abbreviation->getTitle(),
+                ));
+            }
+        } else {
             $this->message($this->_('No abbreviations yet, go ahead and add one!'));
+        }
 
         if ($this->hasPermission('abbreviations-edit')) {
             $buttonAdd = $this->modules->get('InputfieldButton');
@@ -123,7 +124,7 @@ class ProcessAbbreviate extends Process
     }
 
     /**
-     * Called when the URL is this module's page URL + "/something/"
+     * Called when the URL is this module's page URL + "/edit/"
      */
     public function ___executeEdit()
     {
@@ -135,7 +136,7 @@ class ProcessAbbreviate extends Process
         if ($id) {
             $abbreviation = $this->abbreviate->findOnebyId($id);
 
-            if (count($abbreviation) < 1)
+            if (!$abbreviation)
                 throw new WireException("Unknown ID");
 
             Wire::setFuel('processHeadline', $this->_("Edit abbreviation:") ." ". $abbreviation->getText());
@@ -212,6 +213,9 @@ class ProcessAbbreviate extends Process
         return $form->render();
     }
 
+    /**
+     * Called when the URL is this module's page URL + "/api/"
+     */
     public function ___executeApi()
     {
         $text = $this->input->post->abbr;
