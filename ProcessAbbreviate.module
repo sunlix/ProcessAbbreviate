@@ -14,7 +14,6 @@
  *
  * http://www.processwire.com
  * http://www.ryancramer.com
- *
  */
 
 class ProcessAbbreviate extends Process
@@ -31,35 +30,41 @@ class ProcessAbbreviate extends Process
     protected $abbreviate = null;
 
     /**
-     * Return information about this module (required)
+     * Returns information about this module (required)
+     * @return array
      */
     public static function getModuleInfo()
     {
-        return array(
+        return [
             'title'       => 'Abbreviations',
-            'summary'     => 'Easily insert abbreviations',
+            'summary'  => 'Easily mark up and manage abbreviations',
             'version'     => 001,
             'permission'  => 'abbreviations',
-            'permissions' => array(
+            'permissions' => [
                 'abbreviations'      => 'List and view abbreviations',
                 'abbreviations-edit' => 'Add/edit/delete abbreviations',
-            ),
+            ],
             'icon'        => 'sun-o',
             'requires'    => 'Abbreviate',
-        );
+        ];
     }
 
     /**
      * This is an optional initialization function called before any execute functions.
+     * @return void
      */
     public function init()
     {
         parent::init(); // required
 
-        $data             = $this->modules->getModuleConfigData('Abbreviate');
         $this->abbreviate = $this->modules->get('Abbreviate');
     }
 
+    /**
+     * check users permission
+     * @param  string  $name
+     * @return boolean
+     */
     protected function hasPermission($name)
     {
         $user = $this->user;
@@ -81,24 +86,25 @@ class ProcessAbbreviate extends Process
 
     /**
      * This function is executed when a page with your Process assigned is accessed.
+     * @return string
      */
     public function ___execute()
     {
         $table = $this->modules->get('MarkupAdminDataTable');
         $table->setEncodeEntities(false);
-        $table->headerRow(array(
+        $table->headerRow([
             $this->_x('Abbreviation', 'list-table'),
             $this->_x('Explanation', 'list-table'),
-        ));
+        ]);
 
         $abbreviations = $this->abbreviate->findAll();
 
         if ($abbreviations) {
             foreach ($abbreviations as $abbreviation) {
-                $table->row(array(
+                $table->row([
                     wire('sanitizer')->entities($abbreviation->getText()) => "edit/?id=".$abbreviation->getId(),
                     $abbreviation->getTitle(),
-                ));
+                ]);
             }
         } else {
             $this->message($this->_('No abbreviations yet, go ahead and add one!'));
@@ -125,6 +131,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called when the URL is this module's page URL + "/edit/"
+     * @return string
      */
     public function ___executeEdit()
     {
@@ -159,6 +166,7 @@ class ProcessAbbreviate extends Process
         $tab->class .= " WireTab";
 
         $textField = $this->modules->get('InputfieldName');
+        $textField->label = $this->_('Abbreviation');
         $textField->attr('name', 'abbr_text');
         $textField->attr('value', $abbreviation->getText());
         $textField->description = $this->_('Any combination of these characters: -_.a-zA-Z0-9 (i.e. letters, numbers, hyphens, underscores, periods, no spaces)');
@@ -166,6 +174,7 @@ class ProcessAbbreviate extends Process
 
         $titleField = $this->modules->get('InputfieldText');
         $titleField->label = $this->_('Explanation');
+        $titleField->required = true;
         $titleField->attr('name', 'abbr_title');
         $titleField->attr('value', $abbreviation->getTitle());
         $titleField->description = $this->_('Any combination of these characters: -_.a-zA-Z0-9 (i.e. letters, numbers, hyphens, underscores, periods, no spaces)');
@@ -215,6 +224,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called when the URL is this module's page URL + "/api/"
+     * @return string
      */
     public function ___executeApi()
     {
@@ -227,8 +237,10 @@ class ProcessAbbreviate extends Process
 
     /**
      * Save abbreviation
+     * @param InputfieldForm $form
+     * @return void|false
      */
-    protected function save($form)
+    protected function save(InputfieldForm $form)
     {
         if (!$this->hasPermission('abbreviations-edit'))
             throw new WireException($this->_('You do not hae permission to save this.'));
@@ -250,12 +262,10 @@ class ProcessAbbreviate extends Process
         }
 
         if (empty($abbreviation->getText())) {
-            $form->get('abbr_text')->error('Text is required');
+            $form->get('abbr_text')->error('Abbreviation is required');
 
             return false;
-        }
-
-        if (empty($abbreviation->getTitle())) {
+        } elseif (empty($abbreviation->getTitle())) {
             $form->get('abbr_title')->error('Title is required');
 
             return false;
@@ -282,7 +292,7 @@ class ProcessAbbreviate extends Process
      * Called only when your module is installed
      *
      * This version creates a new page with this Process module assigned.
-     *
+     * @return void
      */
     public function ___install()
     {
@@ -311,14 +321,14 @@ class ProcessAbbreviate extends Process
      * Called only when your module is uninstalled
      *
      * This should return the site to the same state it was in before the module was installed.
-     *
+     * @return void
      */
     public function ___uninstall()
     {
         // find the page we installed, locating it by the process field (which has the module ID)
         // it would probably be sufficient just to locate by name, but this is just to be extra sure.
         $moduleID = $this->modules->getModuleID($this);
-        $page     = $this->pages->get("template=admin, process=$moduleID, name=" . self::PAGE_NAME);
+        $page     = $this->pages->get("template=admin, process='. $moduleID .', name=" . self::PAGE_NAME);
 
         if ($page->id) {
             // if we found the page, let the user know and delete it

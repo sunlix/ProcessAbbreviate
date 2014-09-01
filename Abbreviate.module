@@ -14,14 +14,15 @@
  *
  * http://www.processwire.com
  * http://www.ryancramer.com
- *
  */
 
 require_once('Abbreviation.php');
 
 class Abbreviate extends WireData implements Module
 {
-
+    /**
+     * database table name
+     */
     const TABLE = 'abbreviations';
 
     /**
@@ -30,17 +31,16 @@ class Abbreviate extends WireData implements Module
      */
     public static function getModuleInfo()
     {
-
-        return array(
+        return [
             'title'    => 'Abbreviate',
             'version'  => 001,
-            'summary'  => 'Find all abbreviations and mark them with the right title',
+            'summary'  => 'Easily mark up and manage abbreviations',
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
             'icon'     => 'smile-o',
             'installs' => 'ProcessAbbreviate',
-        );
+        ];
     }
 
     /**
@@ -54,10 +54,10 @@ class Abbreviate extends WireData implements Module
 
     /**
      * main module handling
-     * @param  [type] $event
+     * @param  HookEvent $event
      * @return void
      */
-    public function handle($event)
+    public function handle(HookEvent $event)
     {
         $page = $event->arguments[0];
 
@@ -163,7 +163,7 @@ class Abbreviate extends WireData implements Module
 
     /**
      * Find one abbreviation by id and return a array of Abbreviation
-     * @param  string $text
+     * @param  string $id
      * @return array|false
      */
     public function findOneById($id)
