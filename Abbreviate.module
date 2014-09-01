@@ -38,7 +38,7 @@ class Abbreviate extends WireData implements Module
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
-            'icon'     => 'smile-o',
+            'icon'     => 'filter',
             'installs' => 'ProcessAbbreviate',
         ];
     }

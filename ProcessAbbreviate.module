@@ -44,7 +44,7 @@ class ProcessAbbreviate extends Process
                 'abbreviations'      => 'List and view abbreviations',
                 'abbreviations-edit' => 'Add/edit/delete abbreviations',
             ],
-            'icon'        => 'sun-o',
+            'icon'        => 'folder',
             'requires'    => 'Abbreviate',
         ];
     }
