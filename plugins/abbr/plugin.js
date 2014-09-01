@@ -19,7 +19,8 @@ CKEDITOR.plugins.add('abbr', {
         editor.ui.addButton('Abbr', {
             label: 'Insert Abbreviation',
             command: 'abbr',
-            toolbar: 'insert'
+            toolbar: 'insert',
+            allowedContent: 'abbr[title,lang]'
         });
 
         inReadOnly = 0;

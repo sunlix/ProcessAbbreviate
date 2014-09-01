@@ -63,9 +63,11 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                                     this.add("No suggestions found");
                                     this.disable();
                                 }
+
+                                if (data.length === 1) {
+                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', data[0].title);
+                                }
                             }
-                        },
-                        commit: function(element) {
                         }
                     }
                 ]
