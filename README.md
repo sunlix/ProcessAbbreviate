@@ -12,8 +12,7 @@ Read the **How to use** section for further informations.
 1. Place the module files in /site/modules/ProcessAbbreviate/
 2. In your admin, click Modules > Check for new modules
 3. Click "install" for **Abbreviate** (base module)
-4. Configure the fields where the abbreviations will be extracted
-5. Now go to Setup > Abbreviations and start defining your abbreviations!
+4. Now go to Setup > Abbreviations and start defining your abbreviations!
 
 ## How to use
 
@@ -21,7 +20,7 @@ Please make sure that you have completed the *How to install* section first. The
 
 On this setup page you can add or edit all your abbreviations manually. The functions are very common and should be self explained.
 
-After saving any page the base module extract all marked up abbreviations in configured fields and will add them to database.
+After saving any page the base module extract all marked up abbreviations in textarea fields and will add them to database.
 
 ------
 Copyright 2014 by Sven Schüring

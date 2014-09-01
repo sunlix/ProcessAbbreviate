@@ -61,7 +61,14 @@ class Abbreviate extends WireData implements Module
     {
         $page = $event->arguments[0];
 
-        $abbreviations = $this->extractAbbreviations($page->body);
+        $abbreviations = [];
+        foreach ($page->fields as $field) {
+            if ($field->type instanceof FieldtypeTextarea) {
+                $fieldName = $field->name;
+
+                $abbreviations = array_merge($abbreviations, $this->extractAbbreviations($page->$fieldName));
+            }
+        }
 
         if (count($abbreviations) > 0) {
             $this->insert($abbreviations);
@@ -87,7 +94,7 @@ class Abbreviate extends WireData implements Module
             $abbreviations[] = $abbreviation;
         }
 
-        return $abbreviations;
+        return isset($abbreviations) ? $abbreviations : [];
     }
 
     /**
