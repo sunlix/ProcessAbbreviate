@@ -12,7 +12,9 @@ Read the **How to use** section for further informations.
 1. Place the module files in /site/modules/ProcessAbbreviate/
 2. In your admin, click Modules > Check for new modules
 3. Click "install" for **Abbreviate** (base module)
-4. Now go to Setup > Abbreviations and start defining your abbreviations!
+4. Move the ```plugins/abbr``` folder to ```InputfieldCKEditor``` module in your ```site```
+5. Enable the plugin on your CKEditor field and add them to your toolbar
+6. Now go to Setup > Abbreviations and start defining your abbreviations!
 
 ## How to use
 
