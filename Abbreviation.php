@@ -29,6 +29,12 @@ class Abbreviation implements JsonSerializable
     protected $title;
 
     /**
+     * language
+     * @var string
+     */
+    protected $language;
+
+    /**
      * return the id of abbreviation
      * @return integer
      */
@@ -53,6 +59,15 @@ class Abbreviation implements JsonSerializable
     public function getTitle()
     {
         return $this->title;
+    }
+
+    /**
+     * return the language of abbreviation
+     * @return string language code based on IETF language tag
+     */
+    public function getLanguage()
+    {
+        return $this->language;
     }
 
     /**
@@ -89,6 +104,17 @@ class Abbreviation implements JsonSerializable
     }
 
     /**
+     * set the language of abbreviation
+     * @param string $language language code based on IETF language tag
+     */
+    public function setLanguage($language)
+    {
+        $this->language = $language;
+
+        return $this;
+    }
+
+    /**
      * JSON representation of this class
      * @return array
      */
@@ -96,7 +122,8 @@ class Abbreviation implements JsonSerializable
     {
         return [
             'text'  => $this->getText(),
-            'title' => $this->getTitle()
+            'title' => $this->getTitle(),
+            'lang'  => $this->getLanguage(),
         ];
     }
 }
