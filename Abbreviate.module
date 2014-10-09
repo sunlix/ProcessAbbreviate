@@ -84,12 +84,13 @@ class Abbreviate extends WireData implements Module
      */
     public function extractAbbreviations($text)
     {
-        preg_match_all('/<abbr.*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
+        preg_match_all('/<abbr.*lang="(.*)".*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
 
         foreach ($matches[0] as $key => $value) {
             $abbreviation = new Abbreviation();
-            $abbreviation->setText(trim($matches[2][$key]));
-            $abbreviation->setTitle(trim($matches[1][$key]));
+            $abbreviation->setText(trim($matches[3][$key]));
+            $abbreviation->setTitle(trim($matches[2][$key]));
+            $abbreviation->setLanguage(trim($matches[1][$key]));
 
             $abbreviations[] = $abbreviation;
         }
@@ -105,10 +106,18 @@ class Abbreviate extends WireData implements Module
     public function insert(array $abbreviations)
     {
         foreach ($abbreviations as $abbreviation) {
-            $values[] = '("'. $abbreviation->getText() .'", "'. $abbreviation->getTitle() .'")';
+            //$values[] = '("'. $abbreviation->getText() .'", "'. $abbreviation->getTitle() .'")';
+            $values[] = '('. implode(', ', [
+                $abbreviation->getText(),
+                $abbreviation->getTitle(),
+                $abbreviation->getLanguage(),
+            ]) .')';
         }
 
-        $sql = 'INSERT INTO '. self::TABLE .'(`text`, `title`) VALUES '. implode(',', $values) .'ON DUPLICATE KEY UPDATE title=title';
+        // slightly overwrite the duplicate abbreviation with the new/updated one
+        $sql  = 'INSERT INTO '. self::TABLE;
+        $sql .= '(`text`, `title`, `language`) VALUES '. implode(',', $values);
+        $sql .= 'ON DUPLICATE KEY UPDATE title=title';
 
         try {
             if ($this->database->query($sql))
@@ -158,6 +167,7 @@ class Abbreviate extends WireData implements Module
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
+                $abbreviation->setLanguage($row['language']);
 
                 $abbreviations[] = $abbreviation;
             }
@@ -187,6 +197,7 @@ class Abbreviate extends WireData implements Module
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
+                $abbreviation->setLanguage($row['language']);
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
@@ -214,6 +225,7 @@ class Abbreviate extends WireData implements Module
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
+                $abbreviation->setLanguage($row['language']);
 
                 $abbreviations[] = $abbreviation;
             }
@@ -234,6 +246,7 @@ class Abbreviate extends WireData implements Module
                '`id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY, '.
                '`text` varchar(128) NOT NULL, '.
                '`title` varchar(255) NOT NULL, '.
+               '`language` varchar(255), '.
                'UNIQUE `title`(`title`)'.
                ');';
 
