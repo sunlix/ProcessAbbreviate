@@ -18,12 +18,17 @@
 
 require_once('Abbreviation.php');
 
-class Abbreviate extends WireData implements Module
+class Abbreviate extends WireData implements Module, ConfigurableModule
 {
     /**
      * database table name
      */
     const TABLE = 'abbreviations';
+
+    /**
+     * Version of the module database schema. Used for future schema updates
+     */
+    const SCHEMA_VERSION = 2;
 
     /**
      * getModuleInfo is a module required by all modules to tell ProcessWire about them
@@ -44,16 +49,65 @@ class Abbreviate extends WireData implements Module
     }
 
     /**
-     * initialize the module
+     * Default data for module configuration
+     * @return array
+     */
+    public static function getDefaultData()
+    {
+        return [
+            'autoMarkUp'    => 0,
+            'schemaVersion' => 1,
+        ];
+    }
+
+    /**
+     * Populate the default config data
+     */
+    public function __construct()
+    {
+        foreach(self::getDefaultData() as $key => $value) {
+            $this->$key = $value;
+        }
+    }
+
+    public static function getModuleConfigInputfields(array $data)
+    {
+        $fields = new InputfieldWrapper();
+
+        // since this is a static function, we can't use $this->modules, so get them from the global wire() function
+        $modules = wire('modules');
+
+        // merge default data (custom values overwrite defaults)
+        $defaults = self::getDefaultData();
+        $data = array_merge($defaults, $data);
+
+        $field = $modules->get('InputfieldCheckbox');
+        $field->attr('name', 'autoMarkUp');
+        $field->attr('value', $data['autoMarkUp']);
+        if ($data['autoMarkUp']) $field->attr('checked', 'checked');
+        $field->label = __('automatic mark up abbreviations?');
+        $field->description = __('You can choose this option if you want to automatic mark up abbreviations.');
+        $fields->add($field);
+
+        return $fields;
+    }
+
+    /**
+     * Initialize the module
      * @return void
      */
     public function init()
     {
+        // update database schema if not latest
+        if ($this->schemaVersion < self::SCHEMA_VERSION) {
+            $this->updateDatabaseSchema();
+        }
+
         $this->pages->addHookAfter('save', $this, 'handle');
     }
 
     /**
-     * main module handling
+     * Main module handling
      * @param  HookEvent $event
      * @return void
      */
@@ -84,13 +138,13 @@ class Abbreviate extends WireData implements Module
      */
     public function extractAbbreviations($text)
     {
-        preg_match_all('/<abbr.*lang="(.*)".*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
+        preg_match_all('/<abbr.*(lang="(.*)")?.*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
 
         foreach ($matches[0] as $key => $value) {
             $abbreviation = new Abbreviation();
-            $abbreviation->setText(trim($matches[3][$key]));
-            $abbreviation->setTitle(trim($matches[2][$key]));
-            $abbreviation->setLanguage(trim($matches[1][$key]));
+            $abbreviation->setText(trim($matches[4][$key]));
+            $abbreviation->setTitle(trim($matches[3][$key]));
+            $abbreviation->setLanguage(trim($matches[2][$key]));
 
             $abbreviations[] = $abbreviation;
         }
@@ -106,18 +160,17 @@ class Abbreviate extends WireData implements Module
     public function insert(array $abbreviations)
     {
         foreach ($abbreviations as $abbreviation) {
-            //$values[] = '("'. $abbreviation->getText() .'", "'. $abbreviation->getTitle() .'")';
             $values[] = '('. implode(', ', [
-                $abbreviation->getText(),
-                $abbreviation->getTitle(),
-                $abbreviation->getLanguage(),
+                '"'. $abbreviation->getText() .'"',
+                '"'. $abbreviation->getTitle() .'"',
+                '"'. $abbreviation->getLanguage() .'"',
             ]) .')';
         }
 
         // slightly overwrite the duplicate abbreviation with the new/updated one
         $sql  = 'INSERT INTO '. self::TABLE;
         $sql .= '(`text`, `title`, `language`) VALUES '. implode(',', $values);
-        $sql .= 'ON DUPLICATE KEY UPDATE title=title';
+        $sql .= ' ON DUPLICATE KEY UPDATE title=title';
 
         try {
             if ($this->database->query($sql))
@@ -130,7 +183,7 @@ class Abbreviate extends WireData implements Module
     }
 
     /**
-     * delete the given abbreviation
+     * Delete the given abbreviation
      * @param  Abbreviation $abbreviation
      * @return boolean
      */
@@ -237,16 +290,45 @@ class Abbreviate extends WireData implements Module
     }
 
     /**
-     * called when the module will installed
+     * Update to the current database schema needed for latest module version
+     * @return boolean
+     */
+    protected function updateDatabaseSchema()
+    {
+        while ($this->schemaVersion < self::SCHEMA_VERSION) {
+            ++$this->schemaVersion;
+
+            switch ($this->schemaVersion) {
+                case 2:
+                    $sql = 'ALTER TABLE ' . self::TABLE . ' ADD `language` varchar(10) AFTER `title`';
+                    break;
+                default:
+                    throw new WireException('Unrecognized database schema version: '. $this->schemaVersion);
+            }
+
+            if ($sql && $this->database->query($sql)) {
+                $configData = $this->modules->getModuleConfigData($this);
+                $configData['schemaVersion'] = $this->schemaVersion;
+                $this->modules->saveModuleConfigData($this, $configData);
+            } else {
+                throw new WireException('Could not update database schema to version '. $this->schemaVersion);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Called when the module will installed
      * @return void
      */
     public function ___install()
     {
+        // initial schema state - updateDatabaseSchema() will do some updates if needed
         $sql = 'CREATE TABLE '. self::TABLE .'('.
                '`id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY, '.
                '`text` varchar(128) NOT NULL, '.
                '`title` varchar(255) NOT NULL, '.
-               '`language` varchar(255), '.
                'UNIQUE `title`(`title`)'.
                ');';
 
@@ -258,7 +340,7 @@ class Abbreviate extends WireData implements Module
     }
 
     /**
-     * called when the module will uninstalled
+     * Called when the module will uninstalled
      * @return void
      */
     public function ___uninstall()
