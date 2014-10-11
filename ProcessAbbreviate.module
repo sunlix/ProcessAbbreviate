@@ -3,7 +3,7 @@
 /**
  * ProcessWire 'ProcessAbbreviate' module
  *
- * management of all abbreviations
+ * Management of all abbreviations
  *
  * Sven Schüring <ssch@zenmotion.de>
  * http://www.zenmotion.de
@@ -24,7 +24,7 @@ class ProcessAbbreviate extends Process
     const PAGE_NAME = 'abbreviations';
 
     /**
-     * property for module object
+     * Property for module object
      * @var Abbreviate
      */
     protected $abbreviate = null;
@@ -61,7 +61,7 @@ class ProcessAbbreviate extends Process
     }
 
     /**
-     * check users permission
+     * Check users permission
      * @param  string  $name
      * @return boolean
      */

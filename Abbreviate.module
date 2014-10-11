@@ -3,7 +3,7 @@
 /**
  * ProcessWire 'Abbreviate' module
  *
- * hooks the save event to extract and mark all abbreviations
+ * Hooks the save event to extract and mark all abbreviations
  *
  * Sven Schüring <ssch@zenmotion.de>
  * http://www.zenmotion.de
