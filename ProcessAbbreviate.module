@@ -103,7 +103,7 @@ class ProcessAbbreviate extends Process
         if ($abbreviations) {
             foreach ($abbreviations as $abbreviation) {
                 $table->row([
-                    wire('sanitizer')->entities($abbreviation->getText()) => "edit/?id=".$abbreviation->getId(),
+                    wire('sanitizer')->entities($abbreviation->getText()) => 'edit/?id='.$abbreviation->getId(),
                     $abbreviation->getTitle(),
                     $abbreviation->getLanguage(),
                 ]);
@@ -126,7 +126,7 @@ class ProcessAbbreviate extends Process
 
         $out = $table->render();
         if (empty($out))
-            $out .= "<br />";
+            $out .= '<br />';
 
         return $out . $buttons;
     }
@@ -146,13 +146,13 @@ class ProcessAbbreviate extends Process
             $abbreviation = $this->abbreviate->findOnebyId($id);
 
             if (!$abbreviation)
-                throw new WireException("Unknown ID");
+                throw new WireException('Unknown ID');
 
-            Wire::setFuel('processHeadline', $this->_("Edit abbreviation:") ." ". $abbreviation->getText());
+            Wire::setFuel('processHeadline', $this->_('Edit abbreviation:') .' '. $abbreviation->getText());
         } else {
             $abbreviation = new Abbreviation();
 
-            Wire::setFuel('processHeadline', $this->_("Adding new abbreviation"));
+            Wire::setFuel('processHeadline', $this->_('Adding new abbreviation'));
         }
 
         if (!$this->hasPermission('abbreviations-edit'))
@@ -165,7 +165,7 @@ class ProcessAbbreviate extends Process
 
         $tab = new InputfieldWrapper();
         $tab->attr('title', $this->_('Basics'));
-        $tab->class .= " WireTab";
+        $tab->class .= ' WireTab';
 
         $textField = $this->modules->get('InputfieldName');
         $textField->label = $this->_('Abbreviation');
@@ -194,7 +194,7 @@ class ProcessAbbreviate extends Process
         if ($id && $this->hasPermission('abbreviations-edit')) {
             $tab = new InputfieldWrapper();
             $tab->attr('title', $this->_('Delete'));
-            $tab->class .= " WireTab";
+            $tab->class .= ' WireTab';
             $tab->attr('id', 'AbbreviationDelete');
             $f = $this->modules->get('InputfieldCheckbox');
             $f->attr('name', 'abbr_delete');
@@ -219,7 +219,7 @@ class ProcessAbbreviate extends Process
 
             $f = $this->modules->get('InputfieldSubmit');
             $f->attr('id+name', 'abbr_save_exit');
-            $f->class .= " ui-priority-secondary";
+            $f->class .= ' ui-priority-secondary';
             $f->attr('value', $this->_('Save & Exit'));
             $form->add($f);
         }
@@ -285,14 +285,14 @@ class ProcessAbbreviate extends Process
             if (!$abbreviation->getId())
                 $abbreviation->setId($this->database->lastInsertId());
 
-            $this->message($this->_("Saved abbreviation") ." - ". $abbreviation->getText());
+            $this->message($this->_('Saved abbreviation') .' - '. $abbreviation->getText());
 
             if ($this->input->post->abbr_save_exit)
-                $this->session->redirect("../");
+                $this->session->redirect('../');
             else
-                $this->session->redirect("./?id=". $abbreviation->getId());
+                $this->session->redirect('./?id='. $abbreviation->getId());
         } else {
-            $this->error("Error saving");
+            $this->error('Error saving');
 
             return false;
         }
@@ -324,7 +324,7 @@ class ProcessAbbreviate extends Process
         $page->save();
 
         // tell the user we created this page
-        $this->message("Created Page: ". $page->path);
+        $this->message('Created Page: '. $page->path);
     }
 
     /**
@@ -338,11 +338,11 @@ class ProcessAbbreviate extends Process
         // find the page we installed, locating it by the process field (which has the module ID)
         // it would probably be sufficient just to locate by name, but this is just to be extra sure.
         $moduleID = $this->modules->getModuleID($this);
-        $page     = $this->pages->get("template=admin, process='. $moduleID .', name=" . self::PAGE_NAME);
+        $page     = $this->pages->get('template=admin, process='. $moduleID .', name=' . self::PAGE_NAME);
 
         if ($page->id) {
             // if we found the page, let the user know and delete it
-            $this->message("Deleting Page: {$page->path}");
+            $this->message('Deleting Page: '. $page->path);
             $page->delete();
         }
     }
