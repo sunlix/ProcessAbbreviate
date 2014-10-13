@@ -138,13 +138,23 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
      */
     public function extractAbbreviations($text)
     {
-        preg_match_all('/<abbr.*(lang="(.*)")?.*title="(.*)".*>(.*)<\/abbr>/U', $text, $matches);
+        preg_match_all('/<abbr.*title=".*".*>.*<\/abbr>/U', $text, $matches);
 
-        foreach ($matches[0] as $key => $value) {
+        foreach ($matches[0] as $value) {
             $abbreviation = new Abbreviation();
-            $abbreviation->setText(trim($matches[4][$key]));
-            $abbreviation->setTitle(trim($matches[3][$key]));
-            $abbreviation->setLanguage(trim($matches[2][$key]));
+
+            if (preg_match('/lang=".*"/', $value)) {
+                preg_match('/<abbr.*lang="(.*)".*title="(.*)".*>(.*)<\/abbr>/', $value, $m);
+
+                $abbreviation->setText(trim($m[3]));
+                $abbreviation->setTitle(trim($m[2]));
+                $abbreviation->setLanguage(trim($m[1]));
+            } else {
+                preg_match('/<abbr.*title="(.*)".*>(.*)<\/abbr>/', $value, $m);
+
+                $abbreviation->setText(trim($m[2]));
+                $abbreviation->setTitle(trim($m[1]));
+            }
 
             $abbreviations[] = $abbreviation;
         }
@@ -161,16 +171,19 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     {
         foreach ($abbreviations as $abbreviation) {
             $values[] = '('. implode(', ', [
-                '"'. $abbreviation->getText() .'"',
-                '"'. $abbreviation->getTitle() .'"',
-                '"'. $abbreviation->getLanguage() .'"',
+                $this->database->quote($abbreviation->getText()),
+                $this->database->quote($abbreviation->getTitle()),
+                $this->database->quote($abbreviation->getLanguage()),
             ]) .')';
         }
 
         // slightly overwrite the duplicate abbreviation with the new/updated one
         $sql  = 'INSERT INTO '. self::TABLE;
-        $sql .= '(`text`, `title`, `language`) VALUES '. implode(',', $values);
-        $sql .= ' ON DUPLICATE KEY UPDATE title=title';
+        $sql .= ' (`text`, `title`, `language`) VALUES '. implode(',', $values);
+        $sql .= ' ON DUPLICATE KEY UPDATE';
+        $sql .= ' text=VALUES(text),';
+        $sql .= ' title=title,';
+        $sql .= ' language=VALUES(language)';
 
         try {
             if ($this->database->query($sql))
@@ -194,8 +207,11 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         try {
             $query = $this->database->prepare($sql);
             $query->bindValue(':id', $abbreviation->getId());
-            if ($query->execute())
+
+            if ($query->execute()) {
+
                 return true;
+            }
         } catch (Exception $e) {
             $this->error($e->getMessage());
         }
