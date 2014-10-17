@@ -62,6 +62,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Populate the default config data
+     * Default setting will be overwritten with user specific data
      */
     public function __construct()
     {
