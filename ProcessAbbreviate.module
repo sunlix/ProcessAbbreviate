@@ -38,7 +38,7 @@ class ProcessAbbreviate extends Process
         return [
             'title'       => 'Abbreviations',
             'summary'  => 'Easily mark up and manage abbreviations',
-            'version'     => 001,
+            'version'     => 21,
             'permission'  => 'abbreviations',
             'permissions' => [
                 'abbreviations'      => 'List and view abbreviations',
