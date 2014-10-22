@@ -104,15 +104,49 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
             $this->updateDatabaseSchema();
         }
 
-        $this->pages->addHookAfter('save', $this, 'handle');
+        if ($this->autoMarkUp) {
+            $this->pages->addHookBefore('save', $this, 'handleBefore');
+        }
+
+        $this->pages->addHookAfter('save', $this, 'handleAfter');
     }
 
     /**
-     * Main module handling
+     * Module handling before page saving
+     * Find not marked up abbreviations and mark them up
      * @param  HookEvent $event
      * @return void
      */
-    public function handle(HookEvent $event)
+    public function handleBefore(HookEvent $event)
+    {
+        $page = $event->arguments[0];
+        $abbreviations = $this->findAll();
+
+        foreach ($page->fields as $field) {
+            if ($field->type instanceof FieldtypeTextarea) {
+                $fieldName = $field->name;
+                $text = $page->$fieldName;
+
+                foreach ($abbreviations as $abbreviation) {
+                    $lang = $abbreviation->getLanguage() ? ' lang="'.$abbreviation->getLanguage() .'"' : '';
+                    $text = preg_replace(
+                        '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText()) .'\b(?!<\/abbr>)/',
+                        '<abbr'. $lang .' title="'. $abbreviation->getTitle() .'">'. $abbreviation->getText() .'</abbr>',
+                        $text
+                    );
+                }
+                $page->$fieldName = $text;
+            }
+        }
+    }
+
+    /**
+     * Module handling after page saving
+     * Do the abbreviation extraction and persist to database
+     * @param  HookEvent $event
+     * @return void
+     */
+    public function handleAfter(HookEvent $event)
     {
         $page = $event->arguments[0];
 
