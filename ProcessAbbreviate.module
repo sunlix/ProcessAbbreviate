@@ -233,15 +233,17 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called when the URL is this module's page URL + "/api/"
-     * @return string
+     * Print an array of abbreviations as JSON
+     * @return void
      */
     public function ___executeApi()
     {
-        $text = $this->input->post->abbr;
+        $text          = $this->input->post->abbr;
+        $abbreviations = $this->abbreviate->findAllByText($text);
 
-        die(json_encode($this->abbreviate->findAllByText($text)));
-
-        return json_encode($this->abbreviate->findAllByText($text));
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode($this->abbreviate->findAllByText($text));
+        die();
     }
 
     /**
