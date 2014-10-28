@@ -238,7 +238,7 @@ class ProcessAbbreviate extends Process
      */
     public function ___executeApi()
     {
-        $text          = $this->input->post->abbr;
+        $text          = $this->input->get->abbr;
         $abbreviations = $this->abbreviate->findAllByText($text);
 
         header('Content-Type: application/json; charset=UTF-8');
