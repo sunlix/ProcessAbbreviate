@@ -12,7 +12,7 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                         type: 'text',
                         id: 'abbr',
                         label: 'Abbreviation',
-                        validate: CKEDITOR.dialog.validate.notEmpty("Abbreviation field cannot be empty"),
+                        validate: CKEDITOR.dialog.validate.notEmpty('Abbreviation field cannot be empty'),
                         setup: function(element) {
                             this.setValue(element.getText());
                         },
@@ -24,12 +24,12 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                         type: 'text',
                         id: 'title',
                         label: 'Explanation',
-                        validate: CKEDITOR.dialog.validate.notEmpty("Explanation field cannot be empty"),
+                        validate: CKEDITOR.dialog.validate.notEmpty('Explanation field cannot be empty'),
                         setup: function(element) {
-                            this.setValue(element.getAttribute("title"));
+                            this.setValue(element.getAttribute('title'));
                         },
                         commit: function(element) {
-                            element.setAttribute("title", this.getValue());
+                            element.setAttribute('title', this.getValue());
                         }
                     },
                     {
@@ -47,9 +47,9 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
 
                             if (element.getText().length > 0) {
                                 var xhr = new XMLHttpRequest();
-                                xhr.open('POST', '../../setup/abbreviations/api/', false);
-                                xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-                                xhr.send("abbr=" + element.getText());
+                                xhr.open('GET', '../../setup/abbreviations/api/?abbr=' + element.getText(), false);
+                                xhr.setRequestHeader('Content-type','application/json');
+                                xhr.send();
 
                                 if(xhr.status == 200) {
                                     var data = JSON.parse(xhr.responseText);
@@ -60,12 +60,13 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                                         this.add(entry.title);
                                     }, this);
                                 } else {
-                                    this.add("No suggestions found");
+                                    this.add('No suggestions found');
                                     this.disable();
                                 }
 
                                 if (data.length === 1) {
                                     CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', data[0].title);
+                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-advanced','lang', data[0].lang);
                                 }
                             }
                         }
@@ -81,7 +82,7 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                         id: 'id',
                         label: 'Id',
                         setup: function(element) {
-                            this.setValue(element.getAttribute("id"));
+                            this.setValue(element.getAttribute('id'));
                         },
                         commit: function (element) {
                             var id = this.getValue();
