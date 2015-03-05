@@ -168,28 +168,26 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Extract all abbreviations and returns a array of Abbreviation
-     * @param  string $text
+     * @param  string $content
      * @return array
      */
-    public function extractAbbreviations($text)
+    public function extractAbbreviations($content)
     {
-        preg_match_all('/<abbr.*title=".*".*>.*<\/abbr>/U', $text, $matches);
+        preg_match_all('/<abbr.*title=".*".*>.*<\/abbr>/U', $content, $matches);
 
         foreach ($matches[0] as $value) {
             $abbreviation = new Abbreviation();
 
-            if (preg_match('/lang=".*"/', $value)) {
-                preg_match('/<abbr.*lang="(.*)".*title="(.*)".*>(.*)<\/abbr>/', $value, $m);
+            // Attribute name at [1][x]
+            // Attribute value at [2][x]
+            preg_match_all('/(\S+)=["]?((?:.(?!["]?\s+(?:\S+)=|[>"]))+.)["]?/', $value, $attributes);
+            // Text of abbreviation is at [1][0]
+            preg_match_all('/<abbr.*title=".*".*>(.*)<\/abbr>/U', $value, $text);
 
-                $abbreviation->setText(trim($m[3]));
-                $abbreviation->setTitle(trim($m[2]));
-                $abbreviation->setLanguage(trim($m[1]));
-            } else {
-                preg_match('/<abbr.*title="(.*)".*>(.*)<\/abbr>/', $value, $m);
-
-                $abbreviation->setText(trim($m[2]));
-                $abbreviation->setTitle(trim($m[1]));
-            }
+            $abbreviation->setText($text[1][0]);
+            $abbreviation->setTitle($attributes[2][array_search('title', $attributes[1])]);
+            if (in_array('lang', $attributes[1]))
+                $abbreviation->setLanguage($attributes[2][array_search('lang', $attributes[1])]);
 
             $abbreviations[] = $abbreviation;
         }
