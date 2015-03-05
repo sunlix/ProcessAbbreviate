@@ -180,6 +180,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
             // Attribute name at [1][x]
             // Attribute value at [2][x]
+            // http://stackoverflow.com/questions/317053/regular-expression-for-extracting-tag-attributes#317081
             preg_match_all('/(\S+)=["]?((?:.(?!["]?\s+(?:\S+)=|[>"]))+.)["]?/', $value, $attributes);
             // Text of abbreviation is at [1][0]
             preg_match_all('/<abbr.*title=".*".*>(.*)<\/abbr>/U', $value, $text);
