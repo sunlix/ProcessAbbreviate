@@ -38,7 +38,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     {
         return [
             'title'    => 'Abbreviate',
-            'version'  => 21,
+            'version'  => 31,
             'summary'  => 'Easily mark up and manage abbreviations',
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
