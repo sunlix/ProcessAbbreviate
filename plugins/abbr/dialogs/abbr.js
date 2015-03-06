@@ -43,7 +43,7 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                             var lang = this.getValue();
                             if(lang)
                                 element.setAttribute('lang', lang);
-                            else if(!this.insertMode)
+                            else if(!CKEDITOR.dialog.getCurrent().insertMode)
                                 element.removeAttribute('lang');
                         }
                     },
@@ -56,33 +56,27 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                             this.clear();
                         },
                         onChange: function () {
-                            CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title',this.getValue());
+                            var abbrs = CKEDITOR.abbrs;
+                            abbrs.forEach(function (entry) {
+                                if (entry.title === this.getValue()) {
+                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', entry.title);
+                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','lang', entry.lang);
+                                }
+                            }, this);
                         },
-                        setup: function (element) {
+                        setup: function (element, data) {
+                            if (data && data.length > 0) {
+                                data.forEach(function (entry) {
+                                    this.add(entry.title);
+                                }, this);
+                            } else {
+                                this.add('No suggestions found');
+                                this.disable();
+                            }
 
-                            if (element.getText().length > 0) {
-                                var xhr = new XMLHttpRequest();
-                                xhr.open('GET', '../../setup/abbreviations/api/?abbr=' + element.getText(), false);
-                                xhr.setRequestHeader('Content-type','application/json');
-                                xhr.send();
-
-                                if(xhr.status == 200) {
-                                    var data = JSON.parse(xhr.responseText);
-                                }
-
-                                if (data && data.length > 0) {
-                                    data.forEach(function (entry) {
-                                        this.add(entry.title);
-                                    }, this);
-                                } else {
-                                    this.add('No suggestions found');
-                                    this.disable();
-                                }
-
-                                if (data.length === 1) {
-                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', data[0].title);
-                                    CKEDITOR.dialog.getCurrent().setValueOf('tab-advanced','lang', data[0].lang);
-                                }
+                            if (data.length === 1 || CKEDITOR.dialog.getCurrent().insertMode) {
+                                CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', data[0].title);
+                                CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','lang', data[0].lang);
                             }
                         }
                     }
@@ -106,9 +100,27 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
             else
                 this.insertMode = false;
 
-            this.element = element;
+            // Get all abbreviation suggestions by abbreviation text
+            if (element.getText().length > 0) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '../../setup/abbreviations/api/?abbr=' + element.getText(), false);
+                xhr.setRequestHeader('Content-type','application/json');
+                xhr.send();
 
-            this.setupContent( this.element );
+                if(xhr.status == 200) {
+                    var data = JSON.parse(xhr.responseText);
+                }
+
+                if (data && data.length > 0) {
+                    // store to global context
+                    CKEDITOR.abbrs = data;
+                }
+            }
+
+            // Store the reference to the <abbr> element in an internal property of dialog, for later use.
+            this.element = element;
+            // Invoke the setup methods of all dialog window elements, so they can load the element attributes.
+            this.setupContent(element, CKEDITOR.abbrs);
         },
 
         onOk: function() {
