@@ -33,6 +33,21 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                         }
                     },
                     {
+                        type: 'text',
+                        id: 'lang',
+                        label: 'Language',
+                        setup: function(element) {
+                            this.setValue(element.getAttribute('lang'));
+                        },
+                        commit: function(element) {
+                            var lang = this.getValue();
+                            if(lang)
+                                element.setAttribute('lang', lang);
+                            else if(!this.insertMode)
+                                element.removeAttribute('lang');
+                        }
+                    },
+                    {
                         type: 'select',
                         id: 'suggestions',
                         label: 'Suggestions',
@@ -69,42 +84,6 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                                     CKEDITOR.dialog.getCurrent().setValueOf('tab-advanced','lang', data[0].lang);
                                 }
                             }
-                        }
-                    }
-                ]
-            },
-            {
-                id: 'tab-advanced',
-                label: 'Advanced Settings',
-                elements: [
-                    {
-                        type: 'text',
-                        id: 'id',
-                        label: 'Id',
-                        setup: function(element) {
-                            this.setValue(element.getAttribute('id'));
-                        },
-                        commit: function (element) {
-                            var id = this.getValue();
-                            if (id)
-                                element.setAttribute('id', id);
-                            else if (!this.insertMode)
-                                element.removeAttribute('id');
-                        }
-                    },
-                    {
-                        type: 'text',
-                        id: 'lang',
-                        label: 'Language',
-                        setup: function(element) {
-                            this.setValue(element.getAttribute('lang'));
-                        },
-                        commit: function(element) {
-                            var lang = this.getValue();
-                            if(lang)
-                                element.setAttribute('lang', lang);
-                            else if(!this.insertMode)
-                                element.removeAttribute('lang');
                         }
                     }
                 ]
