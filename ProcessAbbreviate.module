@@ -242,7 +242,7 @@ class ProcessAbbreviate extends Process
         $abbreviations = $this->abbreviate->findAllByText($text);
 
         header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($this->abbreviate->findAllByText($text));
+        echo json_encode($abbreviations);
         die();
     }
 
