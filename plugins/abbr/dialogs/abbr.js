@@ -134,11 +134,11 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
 
         onOk: function() {
             var dialog = this,
-                abbr = this.element;
+                abbr   = dialog.element;
 
-            this.commitContent(abbr);
+            dialog.commitContent(abbr);
 
-            if (this.insertMode)
+            if (dialog.insertMode)
                 editor.insertElement(abbr);
         }
     };
