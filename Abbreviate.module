@@ -16,7 +16,7 @@
  * http://www.ryancramer.com
  */
 
-require_once('Abbreviation.php');
+require_once(__DIR__ .'/Abbreviation.php');
 
 class Abbreviate extends WireData implements Module, ConfigurableModule
 {
@@ -38,7 +38,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     {
         return [
             'title'    => 'Abbreviate',
-            'version'  => 31,
+            'version'  => 32,
             'summary'  => 'Easily mark up and manage abbreviations',
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
