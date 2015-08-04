@@ -115,6 +115,17 @@ class Abbreviation implements JsonSerializable
     }
 
     /**
+     * string representation of the abbreviation as HTML
+     * @return string
+     */
+    public function __toString()
+    {
+        $lang = $this->language ? ' lang="'. $this->language .'"' : '';
+
+        return '<abbr'. $lang .' title="'. $this->title .'">'. $this->text .'</abbr>';
+    }
+
+    /**
      * JSON representation of this class
      * @return array
      */

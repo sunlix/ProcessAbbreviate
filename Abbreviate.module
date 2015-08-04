@@ -39,7 +39,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         return [
             'title'    => 'Abbreviate',
             'summary'  => 'Easily mark up and manage abbreviations',
-            'version'  => 32,
+            'version'  => 40,
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
@@ -128,10 +128,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
                 $text      = $page->$fieldName;
 
                 foreach ($abbreviations as $abbreviation) {
-                    $lang = $abbreviation->getLanguage() ? ' lang="'.$abbreviation->getLanguage() .'"' : '';
                     $text = preg_replace(
                         '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText()) .'\b(?!<\/abbr>)/',
-                        '<abbr'. $lang .' title="'. $abbreviation->getTitle() .'">'. $abbreviation->getText() .'</abbr>',
+                        $abbreviation,
                         $text
                     );
                 }
@@ -203,6 +202,8 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
      */
     public function insert(array $abbreviations)
     {
+        $abbreviations = array_unique($abbreviations);
+
         foreach ($abbreviations as $abbreviation) {
             $values[] = '('. implode(', ', [
                 $this->database->quote($abbreviation->getText()),
@@ -215,9 +216,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         $sql  = 'INSERT INTO '. self::TABLE;
         $sql .= ' (`text`, `title`, `language`) VALUES '. implode(',', $values);
         $sql .= ' ON DUPLICATE KEY UPDATE';
-        $sql .= ' text=VALUES(text),';
+        $sql .= ' text=IF(VALUES(text) != "", VALUES(text), text),';
         $sql .= ' title=title,';
-        $sql .= ' language=VALUES(language)';
+        $sql .= ' language=IF(VALUES(language) != "", VALUES(language), language)';
 
         try {
             if ($this->database->query($sql))
