@@ -39,7 +39,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         return [
             'title'    => 'Abbreviate',
             'summary'  => 'Easily mark up and manage abbreviations',
-            'version'  => 40,
+            'version'  => 41,
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
@@ -129,7 +129,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
                 foreach ($abbreviations as $abbreviation) {
                     $text = preg_replace(
-                        '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText()) .'\b(?!<\/abbr>)/',
+                        '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText()) .'(?!\w)(?!<\/abbr>)/',
                         $abbreviation,
                         $text
                     );
