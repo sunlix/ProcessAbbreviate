@@ -129,7 +129,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
                 foreach ($abbreviations as $abbreviation) {
                     $text = preg_replace(
-                        '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText()) .'(?!\w)(?!<\/abbr>)/',
+                        '/(?!<abbr.*>)\b'. preg_quote($abbreviation->getText(), '/') .'(?!\w)(?!<\/abbr>)/',
                         $abbreviation,
                         $text
                     );
