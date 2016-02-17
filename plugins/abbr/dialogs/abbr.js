@@ -74,7 +74,7 @@ CKEDITOR.dialog.add('abbrDialog', function(editor) {
                                 this.disable();
                             }
 
-                            if (data.length === 1 || CKEDITOR.dialog.getCurrent().insertMode) {
+                            if ((data && data.length === 1) || CKEDITOR.dialog.getCurrent().insertMode) {
                                 CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','title', data[0].title);
                                 CKEDITOR.dialog.getCurrent().setValueOf('tab-basic','lang', data[0].lang);
                             }
