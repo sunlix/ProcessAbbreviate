@@ -1,0 +1,29 @@
+{
+  "name": "zenmotion/process-abbreviate",
+  "type": "pw-module",
+  "version": "1.0.0",
+  "description": "This module helps to mark up all abbreviations",
+  "keywords": [
+      "processwire",
+      "module"
+  ],
+  "homepage": "http://modules.processwire.com/modules/process-abbreviate/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sven Schüring",
+      "email": "support@zenmotion.de",
+      "homepage": "https://www.zenmotion.de",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "hari/pw-module": "~1.0"
+  },
+  "autoload": {
+    "files": [
+      "Abbreviation.php"
+    ]
+  }
+}
