@@ -25,4 +25,4 @@ On this setup page you can add or edit all your abbreviations manually. The func
 After saving any page the base module extract all marked up abbreviations in textarea fields and will add them to database.
 
 ------
-Copyright 2014 by Sven Schüring
+Copyright 2014-2016 by Sven Schüring
