@@ -22,6 +22,8 @@ Read the **How to use** section for further informations.
 composer require "zenmotion/process-abbreviate:*"
 ```
 
+After that, you can follow **How to install** from step 4.
+
 ## How to use
 
 Please make sure that you have completed the *How to install* section first. Then in your admin, go to Setup > Abbreviations.
