@@ -16,6 +16,12 @@ Read the **How to use** section for further informations.
 5. Enable the plugin on your CKEditor field and add them to your toolbar
 6. Now go to Setup > Abbreviations and start defining your abbreviations!
 
+### Install via composer
+
+```
+composer require "zenmotion/process-abbreviate:*"
+```
+
 ## How to use
 
 Please make sure that you have completed the *How to install* section first. Then in your admin, go to Setup > Abbreviations.
