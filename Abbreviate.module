@@ -18,8 +18,6 @@ namespace ProcessWire;
  * http://www.ryancramer.com
  */
 
-require_once(__DIR__ .'/Abbreviation.php');
-
 class Abbreviate extends WireData implements Module, ConfigurableModule
 {
     /**
