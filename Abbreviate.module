@@ -1,5 +1,7 @@
 <?php
 
+namespace ProcessWire;
+
 /**
  * ProcessWire 'Abbreviate' module
  *
@@ -39,7 +41,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         return [
             'title'    => 'Abbreviate',
             'summary'  => 'Easily mark up and manage abbreviations',
-            'version'  => 41,
+            'version'  => 100,
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
@@ -223,7 +225,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         try {
             if ($this->database->query($sql))
                 return true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -247,7 +249,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
                 return true;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -266,7 +268,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
             $query = $this->database->prepare($sql);
             $query->execute();
 
-            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
                 $abbreviation = new Abbreviation();
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
@@ -275,7 +277,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
                 $abbreviations[] = $abbreviation;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -296,14 +298,14 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
             $query->bindValue(':id', $id);
             $query->execute();
 
-            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
                 $abbreviation = new Abbreviation();
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
                 $abbreviation->setTitle($row['title']);
                 $abbreviation->setLanguage($row['language']);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -324,7 +326,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
             $query->bindValue(':text', $text);
             $query->execute();
 
-            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
                 $abbreviation = new Abbreviation();
                 $abbreviation->setId($row['id']);
                 $abbreviation->setText($row['text']);
@@ -333,7 +335,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
                 $abbreviations[] = $abbreviation;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
 
@@ -385,7 +387,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
         try {
             $this->database->query($sql);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
     }
@@ -400,7 +402,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
         try {
             $this->database->query($sql);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
     }

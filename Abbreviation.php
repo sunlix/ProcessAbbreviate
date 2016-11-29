@@ -1,5 +1,7 @@
 <?php
 
+namespace ProcessWire;
+
 /**
  * Abbreviation
  *
@@ -8,7 +10,7 @@
  * Sven Schüring <ssch@zenmotion.de>
  * http://www.zenmotion.de
  */
-class Abbreviation implements JsonSerializable
+class Abbreviation implements \JsonSerializable
 {
     /**
      * id
