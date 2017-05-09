@@ -32,6 +32,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     *
      * @return array
      */
     public static function getModuleInfo()
@@ -50,6 +51,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Default data for module configuration
+     *
      * @return array
      */
     public static function getDefaultData()
@@ -95,6 +97,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Initialize the module
+     *
      * @return void
      */
     public function init()
@@ -114,7 +117,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     /**
      * Module handling before page saving
      * Find not marked up abbreviations and mark them up
+     *
      * @param  HookEvent $event
+     *
      * @return void
      */
     public function handleBefore(HookEvent $event)
@@ -142,7 +147,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     /**
      * Module handling after page saving
      * Do the abbreviation extraction and persist to database
+     *
      * @param  HookEvent $event
+     *
      * @return void
      */
     public function handleAfter(HookEvent $event)
@@ -167,7 +174,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Extract all abbreviations and returns a array of Abbreviation
+     *
      * @param  string $content
+     *
      * @return array
      */
     public function extractAbbreviations($content)
@@ -197,7 +206,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Inserts all objects of Abbreviation
+     *
      * @param  array  $abbreviations
+     *
      * @return boolean
      */
     public function insert(array $abbreviations)
@@ -232,7 +243,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Delete the given abbreviation
+     *
      * @param  Abbreviation $abbreviation
+     *
      * @return boolean
      */
     public function delete(Abbreviation $abbreviation)
@@ -256,6 +269,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Find all saved abbreviations and return a array of Abbreviation
+     *
      * @return array|false
      */
     public function findAll()
@@ -284,7 +298,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Find one abbreviation by id and return a array of Abbreviation
+     *
      * @param  string $id
+     *
      * @return array|false
      */
     public function findOneById($id)
@@ -312,7 +328,9 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Find all abbreviations by text and return a array of Abbreviation
+     *
      * @param  string $text
+     *
      * @return array|false
      */
     public function findAllByText($text)
@@ -342,6 +360,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Update to the current database schema needed for latest module version
+     *
      * @return boolean
      */
     protected function updateDatabaseSchema()
@@ -371,6 +390,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Called when the module will installed
+     *
      * @return void
      */
     public function ___install()
@@ -392,6 +412,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
 
     /**
      * Called when the module will uninstalled
+     *
      * @return void
      */
     public function ___uninstall()
