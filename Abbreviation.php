@@ -38,6 +38,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * return the id of abbreviation
+     *
      * @return integer
      */
     public function getId()
@@ -47,6 +48,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * return the abbreviation
+     *
      * @return string
      */
     public function getText()
@@ -56,6 +58,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * returns the title of abbreviation
+     *
      * @return string
      */
     public function getTitle()
@@ -65,6 +68,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * return the language of abbreviation
+     *
      * @return string language code based on IETF language tag
      */
     public function getLanguage()
@@ -74,7 +78,10 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * set the id of abbreviation
+     *
      * @param integer $id
+     *
+     * @return Abbreviation
      */
     public function setId($id)
     {
@@ -85,7 +92,10 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * set the abbreviation
+     *
      * @param string $text
+     *
+     * @return Abbreviation
      */
     public function setText($text)
     {
@@ -96,7 +106,10 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * set the title of abbreviation
+     *
      * @param string $title
+     *
+     * @return Abbreviation
      */
     public function setTitle($title)
     {
@@ -107,7 +120,10 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * set the language of abbreviation
+     *
      * @param string $language language code based on IETF language tag
+     *
+     * @return Abbreviation
      */
     public function setLanguage($language)
     {
@@ -118,6 +134,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * string representation of the abbreviation as HTML
+     *
      * @return string
      */
     public function __toString()
@@ -129,6 +146,7 @@ class Abbreviation implements \JsonSerializable
 
     /**
      * JSON representation of this class
+     * 
      * @return array
      */
     public function jsonSerialize()

@@ -35,6 +35,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * Returns information about this module (required)
+     *
      * @return array
      */
     public static function getModuleInfo()
@@ -55,6 +56,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * This is an optional initialization function called before any execute functions.
+     *
      * @return void
      */
     public function init()
@@ -66,7 +68,9 @@ class ProcessAbbreviate extends Process
 
     /**
      * Check users permission
+     *
      * @param  string  $name
+     *
      * @return boolean
      */
     protected function hasPermission($name)
@@ -90,6 +94,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * This function is executed when a page with your Process assigned is accessed.
+     *
      * @return string
      */
     public function ___execute()
@@ -137,6 +142,7 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called when the URL is this module's page URL + "/edit/"
+     *
      * @return string
      */
     public function ___executeEdit()
@@ -238,6 +244,7 @@ class ProcessAbbreviate extends Process
     /**
      * Called when the URL is this module's page URL + "/api/"
      * Print an array of abbreviations as JSON
+     *
      * @return void
      */
     public function ___executeApi()
@@ -252,7 +259,9 @@ class ProcessAbbreviate extends Process
 
     /**
      * Save abbreviation
+     *
      * @param InputfieldForm $form
+     *
      * @return void|false
      */
     protected function save(InputfieldForm $form)
@@ -306,8 +315,8 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called only when your module is installed
-     *
      * This version creates a new page with this Process module assigned.
+     *
      * @return void
      */
     public function ___install()
@@ -335,8 +344,8 @@ class ProcessAbbreviate extends Process
 
     /**
      * Called only when your module is uninstalled
-     *
      * This should return the site to the same state it was in before the module was installed.
+     * 
      * @return void
      */
     public function ___uninstall()
