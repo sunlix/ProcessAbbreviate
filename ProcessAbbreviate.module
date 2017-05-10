@@ -18,6 +18,8 @@ namespace ProcessWire;
  * http://www.ryancramer.com
  */
 
+if(!class_exists('Abbreviation', false)) require_once(__DIR__ .'/Abbreviation.php');
+
 class ProcessAbbreviate extends Process
 {
     /**
