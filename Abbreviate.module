@@ -28,7 +28,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
     /**
      * Version of the module database schema. Used for future schema updates
      */
-    const SCHEMA_VERSION = 2;
+    const SCHEMA_VERSION = 3;
 
     /**
      * getModuleInfo is a module required by all modules to tell ProcessWire about them
@@ -371,12 +371,19 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
             switch ($this->schemaVersion) {
                 case 2:
                     $sql = 'ALTER TABLE ' . self::TABLE . ' ADD `language` varchar(10) AFTER `title`';
+                    $query = $this->database->prepare($sql);
+                    break;
+                case 3:
+                    $maxIndexLength = $this->database->getMaxIndexLength();
+                    $sql = 'ALTER TABLE ' . self::TABLE . ' MODIFY COLUMN `title` varchar(:maxIndexLength)';
+                    $query = $this->database->prepare($sql);
+                    $query->bindValue(':maxIndexLength', $maxIndexLength, \PDO::PARAM_INT);
                     break;
                 default:
                     throw new WireException('Unrecognized database schema version: '. $this->schemaVersion);
             }
 
-            if ($sql && $this->database->query($sql)) {
+            if ($sql && $query->execute()) {
                 $configData = $this->modules->getModuleConfigData($this);
                 $configData['schemaVersion'] = $this->schemaVersion;
                 $this->modules->saveModuleConfigData($this, $configData);
@@ -399,12 +406,16 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         $sql = 'CREATE TABLE '. self::TABLE .'('.
                '`id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY, '.
                '`text` varchar(128) NOT NULL, '.
-               '`title` varchar(255) NOT NULL, '.
+               '`title` varchar(:maxIndexLength) NOT NULL, '.
                'UNIQUE `title`(`title`)'.
                ');';
 
         try {
-            $this->database->query($sql);
+            $maxIndexLength = $this->database->getMaxIndexLength();
+
+            $query = $this->database->prepare($sql);
+            $query->bindValue(':maxIndexLength', $maxIndexLength, \PDO::PARAM_INT);
+            $query->execute();
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
