@@ -43,7 +43,7 @@ class ProcessAbbreviate extends Process
         return [
             'title'       => 'Abbreviations',
             'summary'     => 'Easily mark up and manage abbreviations',
-            'version'     => 101,
+            'version'     => 102,
             'permission'  => 'abbreviations',
             'permissions' => [
                 'abbreviations'      => 'List and view abbreviations',
@@ -345,7 +345,7 @@ class ProcessAbbreviate extends Process
     /**
      * Called only when your module is uninstalled
      * This should return the site to the same state it was in before the module was installed.
-     * 
+     *
      * @return void
      */
     public function ___uninstall()

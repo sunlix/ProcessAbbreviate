@@ -18,6 +18,8 @@ namespace ProcessWire;
  * http://www.ryancramer.com
  */
 
+if(!class_exists('Abbreviation', false)) require_once(__DIR__ .'/Abbreviation.php');
+
 class Abbreviate extends WireData implements Module, ConfigurableModule
 {
     /**
@@ -40,7 +42,7 @@ class Abbreviate extends WireData implements Module, ConfigurableModule
         return [
             'title'    => 'Abbreviate',
             'summary'  => 'Easily mark up and manage abbreviations',
-            'version'  => 101,
+            'version'  => 102,
             'href'     => 'http://www.zenmotion.de',
             'singular' => true,
             'autoload' => true,
